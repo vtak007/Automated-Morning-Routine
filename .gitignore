@@ -1,0 +1,9 @@
+# Temp files written by editors / Claude Code
+*.tmp.*
+
+# Runtime logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
