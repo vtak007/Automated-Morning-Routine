@@ -9,7 +9,7 @@ An automated startup sequence that runs system maintenance tasks and launches al
 The routine runs in two stages that execute in parallel:
 
 **Stage 1 — `MorningRoutine.ps1`** (runs first, requires Administrator)
-Immediately launches the AHK script, then handles system-level tasks in the background.
+Updates Chrome via `winget`, then launches the AHK script, then handles remaining system-level tasks in the background.
 
 **Stage 2 — `MorningRoutine.ahk`** (launched immediately by the PS1)
 Handles all GUI automation — launching applications and navigating to pages.
@@ -30,7 +30,7 @@ Right-click `MorningRoutine.ps1` → **Run with PowerShell**. It self-elevates t
 |---|---|---|
 | 2b | Registry backup | Full registry export saved to `D:\Dropbox\Computing1\MySystems\Backups\Registry Backups\Registry_YYYY-MM-DD.reg` |
 | 3 | System restore point | Creates a "Morning Routine" restore point via `Checkpoint-Computer` |
-| 4 | Chrome update check | Triggers `GoogleUpdateTaskMachineUA` and `GoogleUpdateTaskMachineCore` scheduled tasks |
+| 4 | Chrome update | Runs `winget upgrade --id Google.Chrome --silent` before AHK launches Chrome |
 
 ### Stage 2 — AutoHotkey (app launches)
 
