@@ -12,6 +12,9 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
+# Step 4: Update Chrome before AHK launches it
+winget upgrade --id Google.Chrome --silent --accept-package-agreements --accept-source-agreements
+
 # Hand off to AHK immediately so GUI steps start without waiting for system tasks below
 Start-Process (Join-Path $PSScriptRoot "MorningRoutine.ahk")
 
@@ -25,9 +28,3 @@ Start-Process -FilePath "regedit.exe" -ArgumentList "/e `"$regFile`"" -Wait -Win
 # Step 3: Create System Restore Point
 Checkpoint-Computer -Description "Morning Routine" -RestorePointType "MODIFY_SETTINGS"
 
-# Step 4: Check for Chrome Update via Google Update scheduled task
-foreach ($task in @("GoogleUpdateTaskMachineUA", "GoogleUpdateTaskMachineCore")) {
-    if (Get-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue) {
-        Start-ScheduledTask -TaskName $task
-    }
-}
