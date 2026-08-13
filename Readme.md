@@ -45,6 +45,8 @@ Right-click `MorningRoutine.ps1` → **Run with PowerShell**. It self-elevates t
 | 9 | TradingView | Launched from the Windows Store app folder |
 | 10 | The Advocate | Opened in Chrome (`theadvocate.com`) |
 | 11 | CNN | Opened in Chrome (`cnn.com`) |
+| 12 | UT99 server log | Opens the most recently modified file in `D:\Dropbox\Gaming\UTLogs\ServerLogs` |
+| 13 | ChatLog Analyzer report | Opens the most recently modified file in the UT99 ChatLog Analyzer's `_system\Reports` folder |
 
 > **Note:** Steps run in the order shown above, not numerically — Bitwarden is triggered last intentionally so the popup is not dismissed by subsequent windows opening.
 

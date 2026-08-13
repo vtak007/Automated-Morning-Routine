@@ -75,3 +75,33 @@ Sleep, 2000
 WinActivate, ahk_exe chrome.exe
 Sleep, 500
 Send, ^+y
+
+; ----------------------------------------------------------
+; Step 12: Open latest UT99 server log
+; ----------------------------------------------------------
+latestFile := ""
+latestTime := ""
+Loop, Files, D:\Dropbox\Gaming\UTLogs\ServerLogs\*.*
+{
+    if (A_LoopFileTimeModified > latestTime) {
+        latestTime := A_LoopFileTimeModified
+        latestFile := A_LoopFileFullPath
+    }
+}
+if (latestFile != "")
+    Run, %latestFile%
+
+; ----------------------------------------------------------
+; Step 13: Open latest ChatLog Analyzer report
+; ----------------------------------------------------------
+latestFile2 := ""
+latestTime2 := ""
+Loop, Files, D:\Dropbox\Computing1\BatchFiles_Scripts\Claude Projects\UT99\UT99 ChatLog Analyzer\_system\Reports\*.*
+{
+    if (A_LoopFileTimeModified > latestTime2) {
+        latestTime2 := A_LoopFileTimeModified
+        latestFile2 := A_LoopFileFullPath
+    }
+}
+if (latestFile2 != "")
+    Run, %latestFile2%
