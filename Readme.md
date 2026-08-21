@@ -62,7 +62,31 @@ This is deliberate, not an unfinished step. The permission prompt is dismissed o
 
 If the permission prompt *doesn't* appear, nothing breaks — the script never touches it, and Step 14 ends as soon as the picker closes. Its absence simply means the grant is already held. Note that the page runs from `file://`, where Chrome's persistent File System Access grants generally don't apply, so expect the prompt most mornings rather than only once.
 
-**Implementation note:** the folder picker is matched by `ahk_class #32770 ahk_exe chrome.exe`, **not** by title. Its real window title is `Select where this site can save changes` — `Select Folder` is only the *button* text. Matching on `Select Folder` matches nothing, and because a failed `WinWait` lets the script continue, that failure is silent: `ControlClick` becomes a no-op and `WinGetPos` returns blank coordinates. The path is typed straight into the `Folder:` field (`Edit1`) rather than the address bar; the first press of `Button1` may only navigate *into* the folder, so the script clears the field and presses again (up to 3 times) to select the folder it is now in.
+**Implementation note:** the folder picker is matched by `ahk_class #32770 ahk_exe chrome.exe`, **not** by title. Its real window title is `Select where this site can save changes` — `Select Folder` is only the *button* text. Matching on `Select Folder` matches nothing, and because a failed `WinWait` lets the script continue, that failure is silent: `ControlClick` becomes a no-op and `WinGetPos` returns blank coordinates.
+
+The confirm is a deliberate two-stage sequence, established by testing rather than guessed:
+
+1. The full path goes straight into the `Folder:` field (`Edit1`) — not the address bar — and Enter is pressed there. This **always** navigates *into* the folder rather than selecting it, leaving `Edit1` showing `Weight Tracker`.
+2. The field is then cleared and the `Select Folder` button activated, which selects the folder now being viewed.
+
+Stage 2 is activated **by keyboard** (`ControlFocus` + `ControlSend {Space}`), with `ControlClick` only as a fallback. `ControlClick` synthesises a mouse click at the control and is silently dropped by this dialog often enough to matter — it was observed failing three times in a row while the button reported `enabled=1`, so this is not a button-readiness problem. Waits use `WinWaitClose` rather than fixed `Sleep`s, because sampling `WinExist` at a fixed delay reports false failures when the dialog is merely slow to tear down.
+
+### Step 14 failure reporting
+
+Step 14 cannot silently do nothing. Both failure modes write a timestamped line to `debug.log` and raise a tray notification:
+
+| Condition | Logged as |
+|---|---|
+| Picker never appeared within 20s | `FAIL - folder picker never appeared...` |
+| Picker still open after 4 confirm attempts | `FAIL - picker still open after 4 attempts...` |
+| Success | `OK - data directory linked` |
+
+Each retry also logs the `Edit1` contents and the button's enabled state, so a future failure is diagnosable from `debug.log` alone without reproducing it live.
+
+The failure that matters most is the first one: the script reaches the **Browse** button by sending `Tab`, `Tab`, `Enter`, which assumes Browse is the *second tab stop* in the page's storage banner. If `weight-tracker.html` ever gains a control ahead of it, the picker simply never opens. Recovery is manual — link the folder yourself — and the routine is otherwise unaffected.
+
+> [!NOTE]
+> **Possible future enhancement — remove the tab-stop guesswork.** Adding `autofocus` to the Browse button in `weight-tracker.html` would put focus on it at load, letting the script send a bare `{Enter}` with no `Tab` hops and no positional assumption. That is the real fix for the fragility above, but it requires a change to the *Weight Tracker* repo rather than this one, so it is recorded here rather than done.
 
 ---
 

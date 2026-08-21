@@ -129,26 +129,102 @@ Send, {Tab}
 Send, {Enter}
 
 WinWait, %weightDlg%,, 20
-if !ErrorLevel
+if ErrorLevel
+{
+    ; Most likely cause: Browse is no longer the second tab stop in the
+    ; page's storage banner. Report it — a silent skip here means no
+    ; tracker with nothing to indicate why.
+    LogStep14("FAIL - folder picker never appeared. Browse may no longer be the second tab stop in weight-tracker.html")
+    TrayTip, Morning Routine, Weight Tracker: folder picker did not open. See debug.log, 10, 2
+}
+else
 {
     WinActivate, %weightDlg%
     Sleep, 800
 
-    ; Put the path straight into the "Folder:" field, then confirm. The
-    ; first press may only navigate INTO the folder; if the dialog is
-    ; still up, clear the field and press again to select where we are.
+    ; Wait until the confirm button is actually interactive. It stays
+    ; disabled while the folder view is still populating (slow on a
+    ; Dropbox-backed path) and clicks sent before then are dropped
+    ; silently — the observed cause of intermittent failures here.
+    btnReady := false
+    Loop, 20
+    {
+        ControlGet, btnEnabled, Enabled,, Button1, %weightDlg%
+        if (btnEnabled)
+        {
+            btnReady := true
+            break
+        }
+        Sleep, 250
+    }
+    if !btnReady
+        LogStep14("WARN - Select Folder still disabled after 5s. Trying anyway")
+
+    ; Put the path straight into the "Folder:" field, then confirm by
+    ; pressing Enter in that field — ControlClick on the button alone
+    ; proved intermittent. The first confirm may only navigate INTO the
+    ; folder; if the dialog is still up, clear the field and press again
+    ; to select where we now are.
     ControlSetText, Edit1, %weightDir%, %weightDlg%
     Sleep, 400
-    ControlClick, Button1, %weightDlg%
-    Sleep, 1500
+    ControlFocus, Edit1, %weightDlg%
+    Sleep, 200
+    ControlSend, Edit1, {Enter}, %weightDlg%
+    WinWaitClose, %weightDlg%,, 3
 
     Loop, 3
     {
         if !WinExist(weightDlg)
             break
+
+        ; Record why the previous confirm did not take, so a future
+        ; failure is diagnosable from debug.log alone.
+        ControlGetText, curEdit, Edit1, %weightDlg%
+        ControlGet, btnEnabled, Enabled,, Button1, %weightDlg%
+        LogStep14("retry " . A_Index . " - Edit1=[" . curEdit . "] Button1enabled=" . btnEnabled)
+
+        ; Clear the field so the button selects the folder we are now in
+        ; rather than navigating deeper.
+        WinActivate, %weightDlg%
+        Sleep, 300
         ControlSetText, Edit1, , %weightDlg%
         Sleep, 300
-        ControlClick, Button1, %weightDlg%
-        Sleep, 1500
+
+        ; Activate via the keyboard first. ControlClick synthesises a
+        ; mouse click at the control and is silently dropped by this
+        ; dialog often enough to matter (observed failing 3x in a row
+        ; with the button reporting enabled=1). Keep it as a fallback.
+        ControlFocus, Button1, %weightDlg%
+        Sleep, 200
+        ControlSend, Button1, {Space}, %weightDlg%
+        WinWaitClose, %weightDlg%,, 3
+
+        if WinExist(weightDlg)
+        {
+            ControlClick, Button1, %weightDlg%
+            WinWaitClose, %weightDlg%,, 3
+        }
     }
+
+    ; Wait for the teardown rather than sampling at a fixed delay — a
+    ; bare WinExist here reports a false failure when the dialog is just
+    ; slow to disappear.
+    WinWaitClose, %weightDlg%,, 5
+
+    if WinExist(weightDlg)
+    {
+        LogStep14("FAIL - picker still open after 4 attempts. Data directory not linked")
+        TrayTip, Morning Routine, Weight Tracker: could not select the data folder. See debug.log, 10, 2
+    }
+    else
+        LogStep14("OK - data directory linked")
+}
+
+; ----------------------------------------------------------
+; Logging helper (also ends the auto-execute section)
+; ----------------------------------------------------------
+LogStep14(msg)
+{
+    FormatTime, ts,, yyyy-MM-dd HH:mm:ss
+    FileAppend, %ts% Step 14: %msg%`n, %A_ScriptDir%\debug.log
 }
