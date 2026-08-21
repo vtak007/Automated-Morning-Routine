@@ -47,8 +47,22 @@ Right-click `MorningRoutine.ps1` → **Run with PowerShell**. It self-elevates t
 | 11 | CNN | Opened in Chrome (`cnn.com`) |
 | 12 | UT99 server log | Opens the most recently modified file in `D:\Dropbox\Gaming\UTLogs\ServerLogs` |
 | 13 | ChatLog Analyzer report | Opens the most recently modified file in the UT99 ChatLog Analyzer's `_system\Reports` folder |
+| 14 | Weight Tracker | Opens `weight-tracker.html` in Chrome and links its data directory to `D:\Dropbox\Computing1\BatchFiles_Scripts\Claude Projects\Weight Tracker\` — see the note below on the two manual clicks |
 
 > **Note:** Steps run in the order shown above, not numerically — Bitwarden is triggered last intentionally so the popup is not dismissed by subsequent windows opening.
+
+### Step 14 — Weight Tracker, and why it stops where it does
+
+The script automates the folder picker only. Two clicks are left to you, on purpose:
+
+1. Chrome's **"allow editing files"** permission prompt
+2. The page's **"Open Data File"** button
+
+This is deliberate, not an unfinished step. The permission prompt is dismissed on *human* time and the script has no reliable way to detect when it has gone. If it blind-sent keystrokes to click "Open Data File" while that prompt was still up, those keys would land on the prompt — and could hit **"Don't allow"**, silently denying folder access. A silent permission denial is a worse outcome than a manual click.
+
+If the permission prompt *doesn't* appear, nothing breaks — the script never touches it, and Step 14 ends as soon as the picker closes. Its absence simply means the grant is already held. Note that the page runs from `file://`, where Chrome's persistent File System Access grants generally don't apply, so expect the prompt most mornings rather than only once.
+
+**Implementation note:** the folder picker is matched by `ahk_class #32770 ahk_exe chrome.exe`, **not** by title. Its real window title is `Select where this site can save changes` — `Select Folder` is only the *button* text. Matching on `Select Folder` matches nothing, and because a failed `WinWait` lets the script continue, that failure is silent: `ControlClick` becomes a no-op and `WinGetPos` returns blank coordinates. The path is typed straight into the `Folder:` field (`Edit1`) rather than the address bar; the first press of `Button1` may only navigate *into* the folder, so the script clears the field and presses again (up to 3 times) to select the folder it is now in.
 
 ---
 

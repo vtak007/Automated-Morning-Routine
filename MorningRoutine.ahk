@@ -105,3 +105,50 @@ Loop, Files, D:\Dropbox\Computing1\BatchFiles_Scripts\Claude Projects\UT99\UT99 
 }
 if (latestFile2 != "")
     Run, %latestFile2%
+
+; ----------------------------------------------------------
+; Step 14: Weight Tracker — open html and link the data directory.
+;
+; The picker is matched by class+exe, NOT by title: its real title is
+; "Select where this site can save changes" — "Select Folder" is only
+; the button text, and matching on that silently matched nothing.
+;
+; Chrome's "allow editing files" permission prompt and the final
+; "Open Data File" button are left as a manual click.
+; ----------------------------------------------------------
+weightDir := "D:\Dropbox\Computing1\BatchFiles_Scripts\Claude Projects\Weight Tracker\"
+weightDlg := "ahk_class #32770 ahk_exe chrome.exe"
+
+Run, "C:\Program Files\Google\Chrome\Application\chrome.exe" "%weightDir%weight-tracker.html"
+WinWait, ahk_exe chrome.exe,, 30
+Sleep, 3000
+
+; Tab to the Browse button and press it
+Send, {Tab}
+Send, {Tab}
+Send, {Enter}
+
+WinWait, %weightDlg%,, 20
+if !ErrorLevel
+{
+    WinActivate, %weightDlg%
+    Sleep, 800
+
+    ; Put the path straight into the "Folder:" field, then confirm. The
+    ; first press may only navigate INTO the folder; if the dialog is
+    ; still up, clear the field and press again to select where we are.
+    ControlSetText, Edit1, %weightDir%, %weightDlg%
+    Sleep, 400
+    ControlClick, Button1, %weightDlg%
+    Sleep, 1500
+
+    Loop, 3
+    {
+        if !WinExist(weightDlg)
+            break
+        ControlSetText, Edit1, , %weightDlg%
+        Sleep, 300
+        ControlClick, Button1, %weightDlg%
+        Sleep, 1500
+    }
+}
