@@ -31,6 +31,7 @@ Right-click `MorningRoutine.ps1` → **Run with PowerShell**. It self-elevates t
 | 2b | Registry backup | Full registry export saved to `D:\Dropbox\Computing1\MySystems\Backups\Registry Backups\Registry_YYYY-MM-DD.reg` |
 | 3 | System restore point | Creates a "Morning Routine" restore point via `Checkpoint-Computer` |
 | 4 | Chrome update | Runs `winget upgrade --id Google.Chrome --silent` before AHK launches Chrome |
+| 5 | Scheduled task error dashboard | Runs `Get-TaskErrors.ps1` (external script, `D:\Dropbox\Computing1\BatchFiles_Scripts\PowershellScripts\Get-TaskErrors\`) with `-Open`, which scans scheduled tasks and opens the generated `TaskDashboard.html` in the default browser |
 
 ### Stage 2 — AutoHotkey (app launches)
 
