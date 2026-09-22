@@ -28,3 +28,6 @@ Start-Process -FilePath "regedit.exe" -ArgumentList "/e `"$regFile`"" -Wait -Win
 # Step 3: Create System Restore Point
 Checkpoint-Computer -Description "Morning Routine" -RestorePointType "MODIFY_SETTINGS"
 
+# Step 5: Scan scheduled tasks for errors and open the dashboard
+& "D:\Dropbox\Computing1\BatchFiles_Scripts\PowershellScripts\Get-TaskErrors\Get-TaskErrors.ps1" -Open
+
