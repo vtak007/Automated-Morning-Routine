@@ -12,6 +12,9 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
+# DEBUG: record everything this elevated (otherwise invisible) session does
+Start-Transcript -Path (Join-Path $env:TEMP "MorningRoutine-transcript.log") -Force | Out-Null
+
 # Step 4: Update Chrome before AHK launches it
 winget upgrade --id Google.Chrome --silent --accept-package-agreements --accept-source-agreements
 
@@ -30,4 +33,6 @@ Checkpoint-Computer -Description "Morning Routine" -RestorePointType "MODIFY_SET
 
 # Step 5: Scan scheduled tasks for errors and open the dashboard
 & "D:\Dropbox\Computing1\BatchFiles_Scripts\PowershellScripts\Get-TaskErrors\Get-TaskErrors.ps1" -Open
+
+Stop-Transcript | Out-Null
 
