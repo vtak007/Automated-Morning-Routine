@@ -18,7 +18,9 @@ Handles all GUI automation — launching applications and navigating to pages.
 
 ## Running it
 
-Right-click `MorningRoutine.ps1` → **Run with PowerShell**. It self-elevates to Administrator if needed, launches the AHK script immediately, then runs the system tasks in parallel in the background.
+Run the **`Morning Routine`** desktop shortcut. It targets `C:\Program Files\PowerShell\7\pwsh.exe` with `-ExecutionPolicy Bypass -WindowStyle Hidden -File "…\MorningRoutine.ps1"`. The script self-elevates to Administrator if needed, launches the AHK script immediately, then runs the system tasks in parallel in the background.
+
+**PowerShell 7 is required.** Step 5 runs `Get-TaskErrors.ps1`, which has `#Requires -Version 7`. If `MorningRoutine.ps1` is started in Windows PowerShell 5.1 (e.g. a shortcut or right-click → *Run with PowerShell* that uses `powershell.exe`), it relaunches itself under `pwsh` automatically. Without that, Step 5 fails — and because the elevated window is hidden, the error is invisible and the dashboard silently stops updating.
 
 ---
 
@@ -105,6 +107,6 @@ Bitwarden is opened via a Chrome keyboard shortcut. Before first use:
 
 | File | Purpose |
 |---|---|
-| `MorningRoutine.ps1` | Entry point — runs system tasks (admin), then launches the AHK script |
+| `MorningRoutine.ps1` | Entry point — relaunches under PowerShell 7 if needed, self-elevates, runs system tasks (admin), launches the AHK script |
 | `MorningRoutine.ahk` | GUI automation — launches all daily-use applications |
 | `debug.log` | Runtime debug output written by the AHK script |
