@@ -6,6 +6,12 @@
 # Launches MorningRoutine.ahk immediately, then runs system tasks in parallel.
 # ============================================================
 
+# Relaunch under PowerShell 7 if started in Windows PowerShell 5.1 (Get-TaskErrors.ps1 requires 7)
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    Start-Process pwsh -ArgumentList "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$PSCommandPath`""
+    exit
+}
+
 # Self-elevate if not running as Administrator
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")) {
     Start-Process pwsh -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -File `"$PSCommandPath`""
